@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>地理与信息工程学院办公楼</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
+    <script src="js/mapboxgl-control-minimap.js"></script>
+    <script src="js/jquery-1.12.4.js"></script>
+    <script src="js/jquery-1.8.3.min.js"></script>
+    <script src="js/jquery-labelauty.js"></script>
+    <script src="js/modernizr.js"></script>
+    <script src="layui-v2.3.0/layui/layui.js"></script>
+
+    <script src="js/jquery-ui.js"></script>
+    <link rel="stylesheet" href="css/jquery-labelauty.css">
+   
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css' rel='stylesheet' />
+
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%;height: 100%; }
+    </style>
+    <style>
+        #map canvas {cursor: default;}
+        .mapboxgl-popup {max-width: 400px;font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;}
+        .mapboxgl-ctrl-minimap{
+            border: 5px solid rgba(140, 159, 241, 0);
+            -webkit-border: 5px solid  rgba(140, 159, 241, 0);
+            -moz-border: 5px solid  rgba(140, 159, 241, 0);
+            -o-border: 5px solid  rgba(140, 159, 241, 0);
+
+            -webkit-border-radius: 10px; 
+            -moz-border-radius: 10px; 
+            -o-border-radius: 10px; 
+            /* border-radius: 10px; */
+            
+            -webkit-border-image: url(images/border.jpg) 30 stretch;
+            -moz-border-image: url(images/border.jpg) 30 stretch; 
+            -o-border-image: url(images/border.jpg) 30 stretch; 
+            
+            }
+        .div1{ position:absolute; width: 100px; height: 400px;right:10px;bottom:200px; background: rgba(180, 241, 243, 0); float: right; text-align:right;}
+        #info{
+    position: absolute;
+    background-color: #ffffff;
+    border:1px solid gray;
+    overflow: visible;
+    font-size: 12px;
+    padding: 0px;
+    color: #333333;
+    /*z-index: 10000;*/
+    /*pointer-events: none;*/
+}
+    </style>
+
+    <!-- radio的样式 -->
+    <style>
+        ul { list-style-type: none;}
+        li { display: inline-block;}
+        input.labelauty + label { font: 12px "Microsoft Yahei";}
+    </style>
+
+    <style>
+        .black_overlay {
+            display: none;
+            position: absolute;
+            top: 0%;
+            left: 0%;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 1001;
+            -moz-opacity: 0.8;
+            opacity: .80;
+            filter: alpha(opacity=80);
+        }
+
+        .white_content {
+            display: none;
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            width: 90%;
+            height: 90%;
+            /* border: 5px solid lightblue; */
+            background-color: rgba(255, 255, 255, 0);
+            z-index: 1002;
+
+        }
+
+       .divContents{
+        bottom: 0px ;
+        width:100%;
+        height:95% ;
+       }
+       .footer{
+           height: 22px;
+           position: fixed;
+           right: 0;
+           bottom: 2px;
+           width: 560px;
+           text-align:center;
+           line-height:22px;
+           background-color: rgba(255, 255, 255, 0.548);
+           color: rgb(0, 0, 0);
+           font-family: Arial;
+           font-size: 12px;
+           letter-spacing: 1px;
+       }
+    </style>
+
+
+</head>
+<body>
+    <div id="info" style="z-index: 9999"></div>
+    <div id='map'></div>
+    
+    <div class="div1">
+            <ul class="dowebok">
+                    <li title="全部楼层"><input type="radio" name="Floor" onchange="checkRadio()" value='AllFloors' data-labelauty="All"></li><br>
+                    <li title="六楼"><input type="radio" name="Floor" onchange="checkRadio()" value='6F' data-labelauty="6F"></li><br>
+                    <li title="五楼"><input type="radio" name="Floor" onchange="checkRadio()" value='5F' data-labelauty="5F"></li><br>
+                    <li title="四楼"><input type="radio" name="Floor" onchange="checkRadio()" value='4F' data-labelauty="4F"></li><br>
+                    <li title="三楼"><input type="radio" name="Floor" onchange="checkRadio()" value='3F' data-labelauty="3F"></li><br>
+                    <li title="二楼"><input type="radio" name="Floor" onchange="checkRadio()" value='2F' data-labelauty="2F"></li><br>
+                    <li title="一楼"><input type="radio" name="Floor" onchange="checkRadio()" value='1F' data-labelauty="1F" checked></li><br>
+            </ul>
+            <ul class="dowebok">
+                    <li title="2D/3D切换"><input type="checkbox" name="change3D" onchange="changeD()"   checked data-labelauty="3D"></li>
+            </ul>
+            <ul class="dowebok">
+                <li>
+                    <!-- onclick="openwin()"  -->
+                    <input class="layui-btn" id="layerDemo1" data-method="setTop" type="image" value="全景" src="images/全景.png" title="地大新校区全景航拍" style="position: relative; width:30px; height:30px; right:0px"/>
+                    <!-- <input id="LABEL" type="image" value="LABEL" src="images/label.png" title="平面注记" style="position: relative;  width:30px; height:30px; display: none"/> -->
+                </li>
+            </ul>
+        
+    </div>
+
+    <div class="footer">
+        <a href="http://www.geovislab.cn/" target="_blank" style="color: #000; text-decoration: none;">© GeoVISLAB</a>
+         | 
+        <a href="http://mail.qq.com/cgi-bin/qm_share?t=qm_mailme&email=1104371359@qq.com" target="_blank" style="color: #000; text-decoration: none;">made by MengtianWen</a>
+         | 
+        <a href="https://www.mapbox.com/about/maps/" target="_blank" style="color: #000; text-decoration: none;">© Mapbox  </a>
+        <a href="https://www.openstreetmap.org/about/" target="_blank" style="color: #000; text-decoration: none;">© OpenStreetMap  </a>
+         | 
+        <a href="https://apps.mapbox.com/feedback/?access_token=pk.eyJ1IjoiMTUwMTk3Mzk2N3loIiwiYSI6ImNqbGYzeHpybzBzeDUzdm85aTlxNDV0NmYifQ.OaMvzCtdNwaa45h-xecSyQ" target="_blank" style="color: #000; text-decoration: none;">Improve this map</a>
+    </div>
+
+    <div align="right" style="position:absolute; width: 400px; height: 22px; right:562px; bottom:2px;"><a href="http://www.amazingcounters.com"><img border="0" src="http://cc.amazingcounters.com/counter.php?i=3243630&c=9731203" alt="AmazingCounters.com"></a></div>
+    
+    <!-- <pre id='features'></pre> -->
+<script>
+    $(function(){
+	$(':input').labelauty();
+});
+mapboxgl.accessToken = 'pk.eyJ1IjoibWVuZ3RpYW53ZW4iLCJhIjoiY2p3MWN4ODFzMDN3bjQ4b3k2NzZyYTZhbCJ9.JkVlIk23LNNfLd9urUShyA';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 
+    //'mapbox://styles/mapbox/streets-v11',
+    {
+        version:8,
+        sources:{
+            tiandimap: {
+              type: "raster",
+              //将tengxun地图的地图服务http放到这里就可以了
+              tiles: [
+              "http://rt1.map.gtimg.com/realtimerender/?z={z}&x={x}&y={y}&type=vector&style=1&v=1.1.1"
+              ],
+              tileSize: 256,
+              scheme:'tms'
+            }
+        },
+        layers:[{
+            id:"tiandimap",
+            type:"raster",
+            source:"tiandimap",
+            minzoom:1,
+            maxzoom:18
+        }]
+    },
+    center: [114.61694, 30.45783],
+    zoom: 15,
+    pitch: 40,
+    bearing: 20
+});
+setTimeout(function(){map.flyTo({
+        center: [114.6197274, 30.4596419],
+        zoom: 19
+    }); }, 3000);
+
+//添加控件
+map.addControl(new mapboxgl.FullscreenControl(),'top-left');
+map.addControl(new mapboxgl.NavigationControl(),'top-left');
+map.addControl(new mapboxgl.Minimap({
+    style: 
+    {
+        version:8,
+        sources:{
+            tiandimap: {
+              type: "raster",
+              //将tengxun地图的地图服务http放到这里就可以了
+              tiles: [
+              "http://rt1.map.gtimg.com/realtimerender/?z={z}&x={x}&y={y}&type=vector&style=1&v=1.1.1"
+              ],
+              tileSize: 256,
+              scheme:'tms'
+            }
+        },
+        layers:[{
+            id:"tiandimap",
+            type:"raster",
+            source:"tiandimap",
+            minzoom:1,
+            maxzoom:18
+        }]
+    },
+
+    center:[114.6260, 30.4657],
+    zoom:16,
+    
+    zoomLevels:[
+    [15, 12, 14],
+    [15, 10, 12],
+    [14, 10, 12],
+    [12, 8, 10],
+    [10, 6, 8]
+  ]
+    }), 'bottom-left');
+map.dragPan.enable();
+map.dragRotate.enable();
+
+document.getElementById("mapboxgl-minimap").style.border="2px solid #3498db85";
+
+map.on('load', function() {
+
+    map.addSource('CUGMap',{
+        'type':'image',
+        'url':'./GeoJSON/CUGMap.jpg',
+        "coordinates": [
+        [114.609915, 30.460368],
+        [114.624893, 30.461292],
+        [114.625476, 30.454058],
+        [114.6104636, 30.4531498]
+    ]
+    });
+    map.addLayer({
+        'id':'CUGmap',
+        "type":'raster',
+        "source":"CUGMap",
+    });
+    addData();
+    map.setLayoutProperty('1F','visibility','visible');
+    map.setLayoutProperty('2F','visibility','none');
+    map.setLayoutProperty('3F','visibility','none');
+    map.setLayoutProperty('4F','visibility','none');
+    map.setLayoutProperty('5F','visibility','none');
+    map.setLayoutProperty('6F','visibility','none');
+    map.setLayoutProperty('AllFloors','visibility','none');
+
+    var info = $('#info');
+    //添加鼠标响应事件
+    for( var i=1;i<=6;i++){
+        var layerName=i.toString()+'F';
+    map.on('mouseenter', layerName, function () {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+    map.on('mousemove', layerName, function (e) {
+        var name = e.features[0].properties.名称;
+        var area = e.features[0].properties.面积;
+        var feature = e.features[0];
+        info[0].style.visibility = "visible";
+        info.css({
+            left: (e.point.x + 10) + 'px',
+            top: (e.point.y + 10) + 'px'
+            });
+        info[0].innerHTML = name+'<br>面积：'+area;
+        
+    });
+
+    // 当鼠标离开的时候变手势
+    map.on('mouseleave', layerName, function () {
+                    info[0].style.visibility = "hidden";
+                    map.getCanvas().style.cursor = '';
+                });
+ 
+            }
+    
+});
+
+function addData(){
+    $.ajaxSettings.async = false;//在执行之前加$.ajaxSettings.async = false;    (同步执行)
+
+    //加载平面底图
+    $.getJSON('./GeoJSON/CUGMap.jpg', function (data) {
+        map.addSource('CUGMap',{
+        'type':'image',
+        'url':'./GeoJSON/CUGMap.jpg',
+        "coordinates": [
+        [114.609915, 30.460368],
+        [114.624893, 30.461292],
+        [114.625476, 30.454058],
+        [114.6104636, 30.4531498]
+    ]
+    });
+        map.addLayer({
+        'id':'CUGmap',
+        "type":'raster',
+        "source":"CUGMap",
+    });
+    });
+    var layerOpacity=0.75;
+    // var floordata=null;
+    // var floortemp=new Array();
+    // var floorGround=new Object();
+    //加载一楼
+    $.getJSON("./GeoJSON/F1.geojson", function (data) {
+        map.addSource('1F',{
+        'type':'geojson',
+        'data':'./GeoJSON/F1.geojson'
+    });  
+        map.addLayer({
+        'id': '1F',
+        'type': 'fill-extrusion',
+        'source': '1F',
+        'paint': {
+            // See the Mapbox Style Specification for details on data expressions.
+            // https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions
+
+            // Get the fill-extrusion-color from the source 'color' property.
+            'fill-extrusion-color': ['get','color'],
+
+            // Get fill-extrusion-height from the source 'height' property.
+            'fill-extrusion-height': ['get','Hight'],
+
+            // Get fill-extrusion-base from the source 'base_height' property.
+            'fill-extrusion-base': ['get','baseHight'],
+
+            // Make extrusions slightly opaque for see through indoor walls.不透明度
+            'fill-extrusion-opacity': layerOpacity
+        }
+    });
+
+    // floordata=data;
+    // for(var i=0;i<floordata.features.length;i++)
+    // {
+    //     if(floordata.features[i].properties.名称=="地面")
+    //     {
+    //         floortemp.push(floordata.features[i]);
+    //     }
+    // }
+    });
+    
+    //加载二楼
+    $.getJSON('./GeoJSON/F2.geojson', function (data) {
+        map.addSource('2F',{
+        'type':'geojson',
+        'data':'./GeoJSON/F2.geojson'
+    });
+        map.addLayer({
+        'id': '2F',
+        'type': 'fill-extrusion',
+        'source': '2F',
+        'paint': {
+            'fill-extrusion-color': ['get','color'],
+            'fill-extrusion-height': ['get','Hight'], 
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': layerOpacity
+        }
+        });
+    //     floordata=data;
+    // for(var i=0;i<floordata.features.length;i++)
+    // {
+    //     if(floordata.features[i].properties.名称=="地面")
+    //     {
+    //         floortemp.push(floordata.features[i]);
+    //     }
+    // }
+    });
+
+    //加载三楼
+    $.getJSON('./GeoJSON/F3.geojson', function (data) {
+        map.addSource('3F',{
+        'type':'geojson',
+        'data':'./GeoJSON/F3.geojson'
+    });
+        map.addLayer({
+        'id': '3F',
+        'type': 'fill-extrusion',
+        'source': '3F',
+        'paint': {
+            'fill-extrusion-color': ['get','color'],
+            'fill-extrusion-height': ['get','Hight'], 
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': layerOpacity
+        }
+        });
+    //     floordata=data;
+    // for(var i=0;i<floordata.features.length;i++)
+    // {
+    //     if(floordata.features[i].properties.名称=="地面")
+    //     {
+    //         floortemp.push(floordata.features[i]);
+    //     }
+    // }
+    });
+
+    //加载四楼
+    $.getJSON('./GeoJSON/F4.geojson', function (data) {
+        map.addSource('4F',{
+        'type':'geojson',
+        'data':'./GeoJSON/F4.geojson'
+    });
+        map.addLayer({
+        'id': '4F',
+        'type': 'fill-extrusion',
+        'source': '4F',
+        'paint': {
+            'fill-extrusion-color': ['get','color'],
+            'fill-extrusion-height': ['get','Hight'], 
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': layerOpacity
+        }
+        });
+    //     floordata=data;
+    // for(var i=0;i<floordata.features.length;i++)
+    // {
+    //     if(floordata.features[i].properties.名称=="地面")
+    //     {
+    //         floortemp.push(floordata.features[i]);
+    //     }
+    // }
+    });
+
+    //加载五楼
+    $.getJSON('./GeoJSON/F5.geojson', function (data) {
+        map.addSource('5F',{
+        'type':'geojson',
+        'data':'./GeoJSON/F5.geojson'
+    });
+        map.addLayer({
+        'id': '5F',
+        'type': 'fill-extrusion',
+        'source': '5F',
+        'paint': {
+            'fill-extrusion-color': ['get','color'],
+            'fill-extrusion-height': ['get','Hight'], 
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': layerOpacity
+        }
+        });
+    //    floordata=data;
+    // for(var i=0;i<floordata.features.length;i++)
+    // {
+    //     if(floordata.features[i].properties.名称=="地面")
+    //     {
+    //         floortemp.push(floordata.features[i]);
+    //     }
+    // }
+    });
+
+    //加载六楼
+    $.getJSON('./GeoJSON/F6.geojson', function (data) {
+        map.addSource('6F',{
+        'type':'geojson',
+        'data':'./GeoJSON/F6.geojson'
+    });
+        map.addLayer({
+        'id': '6F',
+        'type': 'fill-extrusion',
+        'source': '6F',
+        'paint': {
+            'fill-extrusion-color': ['get','color'],
+            'fill-extrusion-height': ['get','Hight'], 
+            'fill-extrusion-base': 0,
+            'fill-extrusion-opacity': layerOpacity
+        }
+        });
+    //     floordata=data;
+    // for(var i=0;i<floordata.features.length;i++)
+    // {
+    //     if(floordata.features[i].properties.名称=="地面")
+    //     {
+    //         floortemp.push(floordata.features[i]);
+    //     }
+    // }
+    });
+
+    //加载全楼
+    $.getJSON('./GeoJSON/AllFloors.geojson', function (data) {
+        map.addSource('AllFloors',{
+        'type':'geojson',
+        'data':'./GeoJSON/AllFloors.geojson'
+    });
+        map.addLayer({
+        'id': 'AllFloors',
+        'type': 'fill-extrusion',
+        'source': 'AllFloors',
+        'paint': {
+            'fill-extrusion-color': ['get','color'],
+            'fill-extrusion-height': ['get','Hight'], 
+            'fill-extrusion-base': ['get','baseHight'],
+            'fill-extrusion-opacity': 0.9
+        }
+    });
+    // floordata=data;
+    // for(var i=0;i<floordata.features.length;i++)
+    // {
+    //     if(floordata.features[i].properties.名称=="地面")
+    //     {
+    //         floortemp.push(floordata.features[i]);
+    //     }
+    // }
+    });
+
+//     if(floortemp.length>0)
+//     {
+//         floorGround.features=floortemp;
+//         floorGround.type="FeatureCollection";
+//     }
+
+
+// map.addSource('floorGround',{
+//     type:"geojson",
+//     data:floorGround
+// })
+//     map.addLayer({
+//         'id': 'Ground',
+//         'type': 'fill-extrusion',
+//         'source': 'floorGround',
+//         'paint': {
+//             'fill-extrusion-color': ['get','color'],
+//             'fill-extrusion-height': ['get','Hight'], 
+//             'fill-extrusion-base': ['get','baseHight'],
+//             'fill-extrusion-opacity': 0.5
+//         }
+//     });
+
+    $.ajaxSettings.async = true;//执行你的代码之后及时恢复为$.ajaxSettings.async = true； （异步执行）
+}
+
+function checkRadio(){
+var radios=document.getElementsByName('Floor');
+    for(var i=0;i<radios.length;i++)
+    {
+        
+        if(radios[i].checked)
+        {
+            if(radios[i].value=='AllFloors')
+            {
+                var itemCheckBox=document.getElementsByName("change3D")[0];
+                itemCheckBox.checked=true;
+                itemCheckBox.disabled=true;
+                map.flyTo({
+                    center: [114.6197274, 30.4596419],
+                    zoom: 17
+            });
+            }
+            else{
+                
+                map.flyTo({
+                    center: [114.6197274, 30.4596419],
+                    zoom: 19
+                });
+                document.getElementsByName("change3D")[0].disabled=false;
+            }    
+            map.setLayoutProperty(radios[i].value,'visibility','visible');
+            map.on('click',radios[i].value, function (e) {
+            var features = map.queryRenderedFeatures(e.point);
+            //var coordinates = e.features[0].geometry.coordinates[0].slice();
+            var centerX=e.features[0].properties.X;
+            var centerY=e.features[0].properties.Y;
+            var coordinates=new mapboxgl.LngLat(centerX, centerY);
+            //var coordinates=[centerX,centerY];
+            var name = e.features[0].properties.名称;
+            var area = e.features[0].properties.面积;
+        
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+        
+            new mapboxgl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(name+'<br>面积：'+area)
+                .addTo(map);
+            });
+
+        }
+        else{
+            map.setLayoutProperty(radios[i].value,'visibility','none');
+        }
+
+        
+    }
+}
+
+//切换2D/3D
+function changeD(){
+    var items = document.getElementsByName("change3D");
+    if(items[0].checked)
+    {
+        changeto3D();
+    }else if(items[0].checked==false)
+    {
+        changeto2D();
+    }
+}
+
+function changeto2D(){
+    map.flyTo({
+        center: [114.6197274, 30.4596419],
+        zoom: 19,
+        pitch: 0,
+        bearing: 0,
+        });
+    map.dragRotate.disable();
+    map.setPaintProperty('1F', 'fill-extrusion-base', 3);
+    map.setPaintProperty('2F', 'fill-extrusion-base', 3);
+    map.setPaintProperty('3F', 'fill-extrusion-base', 3);
+    map.setPaintProperty('4F', 'fill-extrusion-base', 3);
+    map.setPaintProperty('5F', 'fill-extrusion-base', 3);
+    map.setPaintProperty('6F', 'fill-extrusion-base', 3);
+
+    // document.getElementById("LABEL").style.display="";
+
+    var radios=document.getElementsByName('Floor');
+    for(var i=0;i<radios.length;i++)
+    {
+        if(radios[i].checked)
+        {
+            map.setLayoutProperty(radios[i].value,'visibility','visible');
+        }
+    }
+}
+
+function changeto3D(){
+    // document.getElementById("LABEL").style.display="none";
+    map.flyTo({
+        center: [114.6197274, 30.4596419],
+        zoom: 19,
+        pitch: 60,
+        bearing: 0,
+        });
+    map.dragRotate.enable();
+    map.setPaintProperty('1F', 'fill-extrusion-base', 0);
+    map.setPaintProperty('2F', 'fill-extrusion-base', 0);
+    map.setPaintProperty('3F', 'fill-extrusion-base', 0);
+    map.setPaintProperty('4F', 'fill-extrusion-base', 0);
+    map.setPaintProperty('5F', 'fill-extrusion-base', 0);
+    map.setPaintProperty('6F', 'fill-extrusion-base', 0);
+
+    var radios=document.getElementsByName('Floor');
+    for(var i=0;i<radios.length;i++)
+    {
+        if(radios[i].checked)
+        {
+            map.setLayoutProperty(radios[i].value,'visibility','visible');
+        }
+    }
+}
+
+</script>
+
+<script type="text/javascript">
+//弹出全景窗口的代码
+    layui.use('layer', function () { //独立版的layer无需执行这一句
+        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+        //触发事件
+        var active = {
+            setTop: function () {
+                var that = this;
+                //多窗口模式，层叠置顶
+                layer.open({
+                    type: 2 //此处以iframe举例
+                    , title: '新校区全景航拍（创作者：刘壮）'
+                    , area: ['90%', '90%']
+                    , shade: 0
+                    , maxmin: true
+                    , content: 'https://720yun.com/t/c8vkn9qmd77?scene_id=29634964'
+
+                    , zIndex: layer.zIndex //重点1
+                    , success: function (layero) {
+                        layer.setTop(layero); //重点2
+                    }
+                });
+            }
+            , offset: function (othis) {
+                var type = othis.data('type')
+                    , text = othis.text();
+
+
+            }
+        };
+
+        $('#layerDemo1.layui-btn').on('click', function () {
+            var othis = $(this), method = othis.data('method');
+            active[method] ? active[method].call(this, othis) : '';
+        });
+
+    });
+    </script>
+</body>
+</html>
